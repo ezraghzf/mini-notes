@@ -2,6 +2,8 @@
 
 A simple Vue.js notes app using Vue.js 3 Composition API. Uses LocalStorage as temporary storage solution.
 
+📝 [Demo](https://mini-notes-ezraghzf.vercel.app/)
+
 ## Project Setup
 
 ```sh
