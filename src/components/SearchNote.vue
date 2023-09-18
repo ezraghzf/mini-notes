@@ -1,17 +1,20 @@
 <script setup>
-import { ref } from 'vue'
+import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 defineProps({
-    note: {
+    modelValue: {
         type: String,
-        required: false
     }
 })
-const search = ref("")
+const emit = defineEmits(['update:modelValue'])
+const updateValue = (event) => {
+    emit('update:modelValue', event.target.value)
+}
 </script>
 
 <template>
-    <div class="w-full h-full bg-slate-100 rounded-lg p-4 flex flex-col">
-        <input placeholder="Title" class="w-full bg-transparent" type="text" name="bang" id="bang" v-bind="search"
-            @change="$emit('search', search)">
+    <div class="w-full h-full bg-slate-100 rounded-lg p-4 inline-flex flex-row gap-2">
+        <MagnifyingGlassIcon class="w-6 text-black"></MagnifyingGlassIcon>
+        <input placeholder="Title" class="w-full bg-transparent focus:outline-none" type="search" name="search-note"
+            id="search-note" :value="modelValue" @input="updateValue">
     </div>
 </template>

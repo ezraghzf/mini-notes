@@ -1,20 +1,33 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { useStorage } from '@vueuse/core'
 
-const storage = useStorage('notes', [])
 export const useNoteStore = defineStore('note', () => {
   const activeNote = ref({
     id: '',
     title: '',
     note: ''
   })
-  // {
-  //   id: Date.now().toString(),
-  //   title: '',
-  //   note: ''
-  // }
-  const notesList = ref([])
+  const notesList = useStorage('notes', [])
+  const activeNoteIndex = computed(() => {
+    if (!activeNote.value.id) {
+      return ''
+    }
+    const index = notesList.value.findIndex((note) => note.id == activeNote.value.id)
+    return index
+  })
+  const noteSearchQuery = ref('')
+  const filteredNotesList = computed(() => {
+    if (!noteSearchQuery.value) {
+      return notesList.value
+    }
+    const filtered = notesList.value.filter((note) => {
+      if (note.title.match(noteSearchQuery.value)) {
+        return note
+      }
+    })
+    return filtered
+  })
 
   function newNote() {
     const newNote = {
@@ -27,26 +40,53 @@ export const useNoteStore = defineStore('note', () => {
   }
   function saveNote() {
     notesList.value.push({ ...activeNote.value })
-    storage.value = notesList.value
   }
   function editNote() {
-    const index = notesList.value.findIndex((note) => note.id == activeNote.value.id)
-    notesList.value.splice(index, 1, { ...activeNote.value })
-    // const newList = notesList.value.map((note) => {
-    //   if (note.id === activeNote.value.id) {
-    //     return { ...activeNote.value }
-    //   }
-    //   return note
-    // })
-    //notesList.value = newList
-    //storage.value = notesList.value
+    notesList.value.splice(activeNoteIndex.value, 1, { ...activeNote.value })
+  }
+  function searchNote(query) {
+    noteSearchQuery.value = query
+  }
+  function setEditNote(noteId) {
+    const index = notesList.value.findIndex((note) => note.id == noteId)
+    Object.assign(activeNote.value, notesList.value[index])
+  }
+  function closeNote() {
+    Object.assign(activeNote.value, {
+      id: '',
+      title: '',
+      note: ''
+    })
+  }
+  function deleteNote(noteId) {
+    const index = notesList.value.findIndex((note) => note.id == noteId)
+    if (noteId == activeNote.value.id) {
+      Object.assign(activeNote.value, {
+        id: '',
+        title: '',
+        note: ''
+      })
+    }
+    notesList.value.splice(index, 1)
   }
   function loadNotes() {
-    notesList.value = storage.value
     if (notesList.value.length > 0) {
-      activeNote.value = notesList.value[0]
+      Object.assign(activeNote.value, notesList.value[0])
     }
   }
 
-  return { activeNote, notesList, newNote, saveNote, loadNotes, editNote }
+  return {
+    activeNote,
+    notesList,
+    noteSearchQuery,
+    filteredNotesList,
+    newNote,
+    saveNote,
+    loadNotes,
+    editNote,
+    setEditNote,
+    closeNote,
+    searchNote,
+    deleteNote
+  }
 })
